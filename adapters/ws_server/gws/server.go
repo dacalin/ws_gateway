@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var _ _iserver.Server = (*WSServer)(nil)
+
 type WSServer struct {
 	_iserver.Server
 	connectionRoute string

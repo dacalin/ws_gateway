@@ -1,7 +1,6 @@
 package _gws_lib
 
 import (
-	"fmt"
 	_hub "github.com/dacalin/ws_gateway/hub"
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	_server "github.com/dacalin/ws_gateway/ports/server"
@@ -28,8 +27,7 @@ func getCid(socket *gws.Conn) _connection_id.ConnectionId {
 }
 
 func (self *EventHandler) OnOpen(socket *gws.Conn) {
-	fmt.Println("OnOpen")
-	fmt.Println(getCid(socket))
+	log.Printf("OnOpen, cid=%s,", getCid(socket))
 
 	_ = socket.SetDeadline(time.Now().Add(self.pingInterval + PingWait))
 	conn := CreateClientConnection(socket)
@@ -66,6 +64,8 @@ func (self *EventHandler) OnPing(socket *gws.Conn, payload []byte) {
 func (self *EventHandler) OnPong(socket *gws.Conn, payload []byte) {}
 
 func (self *EventHandler) OnMessage(socket *gws.Conn, message *gws.Message) {
+	log.Printf("OnMessage, cid=%s, msg=%s\n", getCid(socket), string(message.Bytes()))
+
 	defer message.Close()
 
 	connId := getCid(socket)

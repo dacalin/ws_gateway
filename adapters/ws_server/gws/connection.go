@@ -6,6 +6,8 @@ import (
 	"github.com/lxzan/gws"
 )
 
+var _ _iconnection.Connection = (*ClientConnection)(nil)
+
 type ClientConnection struct {
 	_iconnection.Connection
 	socket *gws.Conn
@@ -25,7 +27,7 @@ func CreateClientConnection(socket *gws.Conn) *ClientConnection {
 	}
 }
 
-func (self *ClientConnection) Write(data []byte) {
+func (self *ClientConnection) Send(data []byte) {
 	self.socket.WriteMessage(gws.OpcodeText, data)
 }
 
