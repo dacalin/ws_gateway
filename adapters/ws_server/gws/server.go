@@ -2,6 +2,7 @@ package _gws_lib
 
 import (
 	_hub "github.com/dacalin/ws_gateway/hub"
+	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
 	_iserver "github.com/dacalin/ws_gateway/ports/server"
 	"github.com/lxzan/gws"
@@ -56,7 +57,8 @@ func (self *WSServer) Run(port int) {
 			return
 		}
 
-		socket.Session().Store("cid", cidParam)
+		cid := _connection_id.New(cidParam)
+		socket.Session().Store("cid", cid)
 
 		go func() {
 			socket.ReadLoop() // Blocking prevents the context from being GC.

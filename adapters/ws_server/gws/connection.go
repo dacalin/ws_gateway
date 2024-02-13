@@ -12,10 +12,15 @@ type ClientConnection struct {
 	cid    _connection_id.ConnectionId
 }
 
+func getCID(socket *gws.Conn) _connection_id.ConnectionId {
+	cid, _ := socket.Session().Load("sid")
+	return cid
+}
+
 func CreateClientConnection(socket *gws.Conn) *ClientConnection {
-	cid, _ := socket.Session().Load("cid")
+
 	return &ClientConnection{
-		cid:    _connection_id.New(cid),
+		cid:    getCID(socket),
 		socket: socket,
 	}
 }
