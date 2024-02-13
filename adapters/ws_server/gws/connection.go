@@ -14,7 +14,7 @@ type ClientConnection struct {
 
 func getCID(socket *gws.Conn) _connection_id.ConnectionId {
 	cid, _ := socket.Session().Load("sid")
-	return cid
+	return cid.(_connection_id.ConnectionId)
 }
 
 func CreateClientConnection(socket *gws.Conn) *ClientConnection {
