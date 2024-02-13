@@ -13,7 +13,7 @@ type ClientConnection struct {
 }
 
 func getCID(socket *gws.Conn) _connection_id.ConnectionId {
-	cid, _ := socket.Session().Load("sid")
+	cid, _ := socket.Session().Load("cid")
 	return cid.(_connection_id.ConnectionId)
 }
 
