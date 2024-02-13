@@ -24,7 +24,7 @@ type EventHandler struct {
 
 func getCid(socket *gws.Conn) _connection_id.ConnectionId {
 	cid, _ := socket.Session().Load("cid")
-	return cid
+	return cid.(_connection_id.ConnectionId)
 }
 
 func (self *EventHandler) OnOpen(socket *gws.Conn) {
