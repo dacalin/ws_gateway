@@ -46,7 +46,8 @@ func (self *WSServer) Run(port int) {
 		Recovery:         gws.Recovery, // Exception recovery
 	})
 
-	http.HandleFunc("/"+self.connectionRoute, func(writer http.ResponseWriter, request *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/"+self.connectionRoute, func(writer http.ResponseWriter, request *http.Request) {
 		socket, err := upgrader.Upgrade(writer, request)
 		if err != nil {
 			return
@@ -67,7 +68,7 @@ func (self *WSServer) Run(port int) {
 		}()
 	})
 
-	http.ListenAndServe(":"+strconv.Itoa(port), nil)
+	http.ListenAndServe(":"+strconv.Itoa(port), mux)
 }
 
 func (self *WSServer) OnConnect(onConnect _iserver.FnOnConnect) {
