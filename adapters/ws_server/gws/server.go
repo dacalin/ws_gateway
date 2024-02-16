@@ -1,11 +1,11 @@
 package _gws_lib
 
 import (
-	_hub "github.com/dacalin/ws_gateway/hub"
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
 	_iserver "github.com/dacalin/ws_gateway/ports/server"
 	"github.com/lxzan/gws"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -20,7 +20,7 @@ type WSServer struct {
 	pubsub          _ipubsub.Client
 }
 
-func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client) WSServer {
+func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client, debug bool) *WSServer {
 	duration := time.Duration(pingInterval) * time.Second
 
 	eventHandler := EventHandler{
@@ -29,9 +29,10 @@ func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client) WS
 		fnOnDisconnect: nil,
 		fnOnPing:       nil,
 		fnOnMessage:    nil,
+		debug:          debug,
 	}
 
-	return WSServer{
+	return &WSServer{
 		eventHandler:    eventHandler,
 		connectionRoute: connectionRoute,
 		pubsub:          pubsub,
@@ -39,9 +40,6 @@ func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client) WS
 }
 
 func (self *WSServer) Run(port int) {
-
-	_hub.New(self.pubsub)
-
 	upgrader := gws.NewUpgrader(&self.eventHandler, &gws.ServerOption{
 		ReadAsyncEnabled: true,         // Parallel messages processing
 		CompressEnabled:  true,         // Enable compression
@@ -56,6 +54,8 @@ func (self *WSServer) Run(port int) {
 
 		cidParam := request.URL.Query().Get("cid")
 		if cidParam == "" {
+			log.Printf("GWSHandlerError::Expected cid param, got none.")
+			socket.NetConn().Close()
 			return
 		}
 

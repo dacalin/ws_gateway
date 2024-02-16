@@ -1,7 +1,7 @@
 package _gws_lib
 
 import (
-	_hub "github.com/dacalin/ws_gateway/hub"
+	_gws_hub "github.com/dacalin/ws_gateway/adapters/ws_server/gws/hub"
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	_server "github.com/dacalin/ws_gateway/ports/server"
 	"github.com/lxzan/gws"
@@ -19,6 +19,7 @@ type EventHandler struct {
 	fnOnDisconnect _server.FnOnDisconnect
 	fnOnPing       _server.FnOnPing
 	fnOnMessage    _server.FnOnMessage
+	debug          bool
 }
 
 func getCid(socket *gws.Conn) _connection_id.ConnectionId {
@@ -27,11 +28,13 @@ func getCid(socket *gws.Conn) _connection_id.ConnectionId {
 }
 
 func (self *EventHandler) OnOpen(socket *gws.Conn) {
-	log.Printf("OnOpen, cid=%s,", getCid(socket))
+	if self.debug {
+		log.Printf("OnOpen, cid=%s,", getCid(socket))
+	}
 
 	_ = socket.SetDeadline(time.Now().Add(self.pingInterval + PingWait))
 	conn := CreateClientConnection(socket)
-	_hub.Instance().Set(conn.ConnectionId(), conn)
+	_gws_hub.Instance().Set(conn.ConnectionId(), conn)
 
 	if self.fnOnConnect != nil {
 		self.fnOnConnect(conn.ConnectionId(), map[string]string{})
@@ -40,14 +43,17 @@ func (self *EventHandler) OnOpen(socket *gws.Conn) {
 }
 
 func (self *EventHandler) OnClose(socket *gws.Conn, err error) {
-	log.Printf("onclose, cid=%s, msg=%s\n", getCid(socket), err.Error())
+	if self.debug {
+		log.Printf("onclose, cid=%s, msg=%s\n", getCid(socket), err.Error())
+	}
 
 	connId := getCid(socket)
-	_hub.Instance().Delete(connId)
 
 	if self.fnOnDisconnect != nil {
 		self.fnOnDisconnect(connId)
 	}
+
+	_gws_hub.Instance().Delete(connId)
 }
 
 func (self *EventHandler) OnPing(socket *gws.Conn, payload []byte) {
@@ -64,7 +70,9 @@ func (self *EventHandler) OnPing(socket *gws.Conn, payload []byte) {
 func (self *EventHandler) OnPong(socket *gws.Conn, payload []byte) {}
 
 func (self *EventHandler) OnMessage(socket *gws.Conn, message *gws.Message) {
-	log.Printf("OnMessage, cid=%s, msg=%s\n", getCid(socket), string(message.Bytes()))
+	if self.debug {
+		log.Printf("OnMessage, cid=%s, msg=%s\n", getCid(socket), string(message.Bytes()))
+	}
 
 	defer message.Close()
 

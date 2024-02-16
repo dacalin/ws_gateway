@@ -1,6 +1,6 @@
 package _ipubsub
 
 type Subscriber interface {
-	Receive() ([]byte, error)
+	Receive() chan []byte
 	Close()
 }

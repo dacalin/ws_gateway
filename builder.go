@@ -2,26 +2,43 @@ package ws_gateway
 
 import (
 	"context"
+	"errors"
 	_pubsub "github.com/dacalin/ws_gateway/adapters/pubsub/redis"
 	_gws_lib "github.com/dacalin/ws_gateway/adapters/ws_server/gws"
+	_gws_hub "github.com/dacalin/ws_gateway/adapters/ws_server/gws/hub"
 	"github.com/dacalin/ws_gateway/gateway"
 	_igateway "github.com/dacalin/ws_gateway/ports/gateway"
 	_iserver "github.com/dacalin/ws_gateway/ports/server"
 	"github.com/go-redis/redis/v8"
+	"strconv"
+	"strings"
 )
 
-func CreateServer(redisAddress string, pingIntervalSeconds int, ctx context.Context) _iserver.Server {
+func configGWSDriver(config Config, ctx context.Context) (_iserver.Server, _igateway.Gateway) {
+	redisAddress := config.GWSDriver.RedisHost + ":" + strconv.Itoa(config.GWSDriver.RedisPort)
 	var redisClient = redis.NewClient(&redis.Options{
 		Addr: redisAddress,
 	})
 
 	pubsubClient := _pubsub.NewClient(redisClient, ctx)
 
-	server := _gws_lib.Create("connect", pingIntervalSeconds, pubsubClient)
+	hub := _gws_hub.New(pubsubClient)
+	connectionGateway := gateway.New(hub)
 
-	return &server
+	server := _gws_lib.Create(config.GWSDriver.WSRoute, config.GWSDriver.PingIntervalSeconds, pubsubClient, config.EnableDebugLog)
+	return server, connectionGateway
 }
 
-func CreateConnectionGateway() _igateway.Gateway {
-	return gateway.New()
+func Create(config Config, ctx context.Context) (_iserver.Server, _igateway.Gateway, error) {
+
+	switch strings.ToUpper(config.Driver) {
+
+	case "GWS":
+		server, connGW := configGWSDriver(config, ctx)
+		return server, connGW, nil
+
+	default:
+		return nil, nil, errors.New("WSGateway::Unsupported Driver " + config.Driver)
+
+	}
 }

@@ -6,6 +6,8 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+var _ _ipubsub.Client = (*Client)(nil)
+
 type Client struct {
 	_ipubsub.Client
 	client *redis.Client
