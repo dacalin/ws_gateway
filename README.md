@@ -3,6 +3,14 @@
 ## Introduction
 WS Gateway is a simple, fast and reliable solution that allow you to **scale websockets** **server horizontally** easily, and painlessly. The plan is to offer different providers for the WS server and pubsub service, but right now the only option is GWS (https://github.com/lxzan/gws) as the WS Server and Redis as pubsub provider. 
 
+A common solution to scale websockets is show is this diagram:
+
+![image](https://github.com/dacalin/ws_gateway/assets/18492281/16d2ad56-173e-4998-86f7-93401a35a92e)
+
+However, this library provide an abstraction that allow you to code like if you only had one instance. (See the example below)
+![image](https://github.com/dacalin/ws_gateway/assets/18492281/027a6258-5064-47bb-9533-8a7681a59655)
+
+
 ## Public Interfaces
 
 ### Server
