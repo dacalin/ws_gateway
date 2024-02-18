@@ -1,4 +1,4 @@
-# WS gateway. Simple, fast and reliable horizontal scaling of websockets
+# WS gateway. Simple, fast and reliable horizontal scaling of websockets.
 
 ## Introduction
 WS Gateway is a simple, fast and reliable solution that allow you to **scale websockets** **server horizontally** easily, and painlessly. The plan is to offer different providers for the WS server and pubsub service, but right now the only option is GWS (https://github.com/lxzan/gws) as the WS Server and Redis as pubsub provider.
