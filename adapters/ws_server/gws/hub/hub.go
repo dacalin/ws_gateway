@@ -11,8 +11,9 @@ import (
 var _ _ihub.Hub = (*Hub)(nil)
 
 type Hub struct {
-	connections map[_connection_id.ConnectionId]ConnectionData
-	pubsub      _ipubsub.Client
+	connections sync.Map
+	//connections map[_connection_id.ConnectionId]ConnectionData
+	pubsub _ipubsub.Client
 }
 
 var lock = &sync.Mutex{}
@@ -27,7 +28,7 @@ func New(pubsub _ipubsub.Client) *Hub {
 	defer lock.Unlock()
 	if instance == nil {
 		instance = &Hub{
-			connections: make(map[_connection_id.ConnectionId]ConnectionData),
+			connections: sync.Map{},
 			pubsub:      pubsub,
 		}
 	}
@@ -64,31 +65,32 @@ func (self *Hub) Set(cid _connection_id.ConnectionId, conn _iconnection.Connecti
 		connection: conn,
 	}
 
-	self.connections[cid] = data
+	self.connections.Store(cid, data)
 
 	go listener(data, self.pubsub)
 }
 
 func (self *Hub) Get(cid _connection_id.ConnectionId) (_iconnection.Connection, bool) {
-	conn, found := self.connections[cid]
+	conn, found := self.connections.Load(cid)
 
 	if found == false {
 		return nil, found
 	}
 
-	return conn.connection, found
+	connCasted := conn.(ConnectionData)
+	return connCasted.connection, found
 }
 
 func (self *Hub) Delete(cid _connection_id.ConnectionId) {
-	conn, found := self.connections[cid]
-
+	conn, found := self.connections.Load(cid)
 	if found == false {
 		return
 	}
 
-	conn.endSignal <- true
+	connCasted := conn.(ConnectionData)
+	connCasted.endSignal <- true
 
-	delete(self.connections, cid)
+	self.connections.Delete(cid)
 }
 
 func (self *Hub) PubSub() _ipubsub.Client {
