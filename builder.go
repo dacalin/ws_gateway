@@ -8,19 +8,28 @@ import (
 	_gws_hub "github.com/dacalin/ws_gateway/adapters/ws_server/gws/hub"
 	"github.com/dacalin/ws_gateway/gateway"
 	_igateway "github.com/dacalin/ws_gateway/ports/gateway"
+	_ipubsub "github.com/dacalin/ws_gateway/ports/pubsub"
 	_iserver "github.com/dacalin/ws_gateway/ports/server"
 	"github.com/go-redis/redis/v8"
 	"strconv"
 	"strings"
 )
 
-func configGWSDriver(config Config, ctx context.Context) (_iserver.Server, _igateway.Gateway) {
-	redisAddress := config.GWSDriver.RedisHost + ":" + strconv.Itoa(config.GWSDriver.RedisPort)
+func configPubSubDriver(config Config, ctx context.Context) _ipubsub.Client {
+	redisAddress := config.GWSDriver.PubSub.Host + ":" + strconv.Itoa(config.GWSDriver.PubSub.Port)
+
 	var redisClient = redis.NewClient(&redis.Options{
 		Addr: redisAddress,
 	})
 
 	pubsubClient := _pubsub.NewClient(redisClient, ctx)
+
+	return pubsubClient
+
+}
+
+func configGWSDriver(config Config, ctx context.Context) (_iserver.Server, _igateway.Gateway) {
+	var pubsubClient = configPubSubDriver(config, ctx)
 
 	hub := _gws_hub.New(pubsubClient)
 	connectionGateway := gateway.New(hub)

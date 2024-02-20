@@ -1,6 +1,7 @@
 package ws_gateway
 
-//redisAddress string, pingIntervalSeconds int,
+var DRIVER_WS_GWS = "gws"
+var DRIVER_PUBSUB_REDIS = "redis"
 
 type Config struct {
 	Driver         string
@@ -9,8 +10,13 @@ type Config struct {
 }
 
 type GWSDriverConfig struct {
-	RedisHost           string
-	RedisPort           int
+	PubSub              PubSubDriverConfig
 	PingIntervalSeconds int
 	WSRoute             string
+}
+
+type PubSubDriverConfig struct {
+	Driver string
+	Host   string
+	Port   int
 }
