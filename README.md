@@ -45,12 +45,15 @@ type Gateway interface {
 An example app can be found here https://github.com/dacalin/demo_chat
 
 ```
-WSConfig := ws_gateway.Config{
-		Driver:         "gws",
+	WSConfig := ws_gateway.Config{
+		Driver:         ws_gateway.DRIVER_WS_GWS,
 		EnableDebugLog: true,
 		GWSDriver: ws_gateway.GWSDriverConfig{
-			RedisHost:           config.RedisHost,
-			RedisPort:           config.RedisPort,
+			PubSub: 	ws_gateway.PubSubDriverConfig{
+				Driver: 		ws_gateway.DRIVER_PUBSUB_REDIS,
+				Host:           config.RedisHost,
+				Port:           config.RedisPort,
+			},
 			PingIntervalSeconds: config.WsPingIntervalSeconds,
 			WSRoute:             "connect",
 		},
