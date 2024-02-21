@@ -13,7 +13,8 @@ var _ _igateway.Gateway = (*Gateway)(nil)
 
 type Gateway struct {
 	_igateway.Gateway
-	groups map[groupName]*ConnectionMap
+	//groups map[groupName]*ConnectionMap
+	groups sync.Map
 	hub    _ihub.Hub
 }
 
@@ -30,7 +31,7 @@ func New(hub _ihub.Hub) *Gateway {
 	if instance == nil {
 		if instance == nil {
 			instance = &Gateway{
-				groups: make(map[groupName]*ConnectionMap),
+				groups: sync.Map{},
 				hub:    hub,
 			}
 		}
@@ -43,22 +44,30 @@ func (self *Gateway) Send(cid _connection_id.ConnectionId, data []byte) {
 }
 
 func (self *Gateway) Broadcast(group string, data []byte) {
-	items := self.groups[groupName(group)].Items()
+	connMapI, _ := self.groups.Load(groupName(group))
+	connMap := connMapI.(*ConnectionMap)
 
-	for conn, _ := range items {
+	for conn, _ := range connMap.Items() {
 		self.Send(conn, data)
 	}
 }
 
 func (self *Gateway) SetGroup(cid _connection_id.ConnectionId, group string) {
-	if self.groups[groupName(group)] == nil {
+	connMapI, found := self.groups.Load(groupName(group))
+	var connMap *ConnectionMap
+
+	if found == false {
 		newMap := NewConnectionMap()
-		self.groups[groupName(group)] = &newMap
+		self.groups.Store(groupName(group), &newMap)
+		connMap = &newMap
+
+	} else {
+		connMap = connMapI.(*ConnectionMap)
 	}
 
-	self.groups[groupName(group)].Set(cid)
+	connMap.Set(cid)
 }
 
 func (self *Gateway) RemoveGroup(cid _connection_id.ConnectionId, group string) {
-	self.groups[groupName(group)].Delete(cid)
+	self.groups.Delete(groupName(group))
 }
