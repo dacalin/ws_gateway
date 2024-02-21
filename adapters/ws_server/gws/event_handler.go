@@ -58,16 +58,18 @@ func (self *EventHandler) OnClose(socket *gws.Conn, err error) {
 
 func (self *EventHandler) OnPing(socket *gws.Conn, payload []byte) {
 	_ = socket.SetDeadline(time.Now().Add(self.pingInterval + PingWait))
-
-	//_ws_api.OnPing(getCid(socket))
 	connId := getCid(socket)
 
 	if self.fnOnPing != nil {
 		self.fnOnPing(connId)
 	}
+
+	_gws_hub.Instance().Send(connId, []byte("pong"))
 }
 
-func (self *EventHandler) OnPong(socket *gws.Conn, payload []byte) {}
+func (self *EventHandler) OnPong(socket *gws.Conn, payload []byte) {
+
+}
 
 func (self *EventHandler) OnMessage(socket *gws.Conn, message *gws.Message) {
 	if self.debug {
