@@ -13,8 +13,7 @@ var _ _igateway.Gateway = (*Gateway)(nil)
 
 type Gateway struct {
 	_igateway.Gateway
-	//groups map[groupName]*ConnectionMap
-	groups sync.Map
+	groups sync.Map //groups map[groupName]ConnectionMap
 	hub    _ihub.Hub
 }
 
@@ -45,24 +44,24 @@ func (self *Gateway) Send(cid _connection_id.ConnectionId, data []byte) {
 
 func (self *Gateway) Broadcast(group string, data []byte) {
 	connMapI, _ := self.groups.Load(groupName(group))
-	connMap := connMapI.(*ConnectionMap)
+	connMap := connMapI.(ConnectionMap)
 
-	for conn, _ := range connMap.Items() {
-		self.Send(conn, data)
+	for cid, _ := range connMap.Items() {
+		self.Send(cid, data)
 	}
 }
 
 func (self *Gateway) SetGroup(cid _connection_id.ConnectionId, group string) {
 	connMapI, found := self.groups.Load(groupName(group))
-	var connMap *ConnectionMap
+	var connMap ConnectionMap
 
 	if found == false {
 		newMap := NewConnectionMap()
-		self.groups.Store(groupName(group), &newMap)
-		connMap = &newMap
+		self.groups.Store(groupName(group), newMap)
+		connMap = newMap
 
 	} else {
-		connMap = connMapI.(*ConnectionMap)
+		connMap = connMapI.(ConnectionMap)
 	}
 
 	connMap.Set(cid)
