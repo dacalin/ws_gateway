@@ -38,7 +38,6 @@ func (self *Subscriber) Receive() chan []byte {
 				chOut <- []byte(msg.Payload)
 
 			case <-self.endSignal:
-				println("Receive go routine end")
 				return
 
 			}
