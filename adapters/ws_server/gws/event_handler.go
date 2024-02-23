@@ -33,11 +33,14 @@ func (self *EventHandler) OnOpen(socket *gws.Conn) {
 	}
 
 	_ = socket.SetDeadline(time.Now().Add(self.pingInterval + PingWait))
+
 	conn := CreateClientConnection(socket)
 	_gws_hub.Instance().Set(conn.ConnectionId(), conn)
 
 	if self.fnOnConnect != nil {
-		self.fnOnConnect(conn.ConnectionId(), map[string]string{})
+		paramsI, _ := socket.Session().Load("params")
+		params := paramsI.(map[string]string)
+		self.fnOnConnect(conn.ConnectionId(), params)
 	}
 
 }

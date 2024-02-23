@@ -60,8 +60,19 @@ func (self *WSServer) Run(port int) {
 			return
 		}
 
+		// Get connection Id
 		cid := _connection_id.New(cidParam)
 		socket.Session().Store("cid", cid)
+
+		// Get query params
+		queryParams := request.URL.Query()
+		params := make(map[string]string)
+
+		for key, value := range queryParams {
+			params[key] = value[0]
+		}
+
+		socket.Session().Store("params", params)
 
 		go func() {
 			socket.ReadLoop() // Blocking prevents the context from being GC.
