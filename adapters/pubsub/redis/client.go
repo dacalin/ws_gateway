@@ -28,6 +28,8 @@ func (self *Client) Subscribe(channels ...string) _ipubsub.Subscriber {
 }
 
 func (self *Client) Publish(channel string, message []byte) {
+	log.Printf("Publish, channel=%s, msg=%s\n", channel, string(message))
+
 	cmd := self.client.Publish(self.ctx, channel, message)
 	if cmd != nil && cmd.Err() != nil {
 		log.Fatal(cmd.Err())

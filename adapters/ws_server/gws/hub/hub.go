@@ -5,6 +5,7 @@ import (
 	_iconnection "github.com/dacalin/ws_gateway/ports/connection"
 	_ihub "github.com/dacalin/ws_gateway/ports/hub"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
+	"log"
 	"sync"
 )
 
@@ -37,6 +38,8 @@ func New(pubsub _ipubsub.Client) *Hub {
 }
 
 func listener(data ConnectionData, pubsub _ipubsub.Client) {
+	log.Printf("listening cid=%s", data.connection.ConnectionId())
+
 	cid := data.connection.ConnectionId()
 	subscriber := pubsub.Subscribe(cid.Value())
 
@@ -98,11 +101,15 @@ func (self *Hub) PubSub() _ipubsub.Client {
 }
 
 func (self *Hub) Send(cid _connection_id.ConnectionId, data []byte) {
+	log.Printf("Send To cid=%s", cid.Value())
+
 	conn, found := self.Get(cid)
 
 	if found == false {
+		log.Print("Send using PubSub")
 		self.PubSub().Publish(cid.Value(), data)
 	} else {
+		log.Print("Send using Memory")
 		conn.Send(data)
 	}
 }
