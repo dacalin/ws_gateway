@@ -4,6 +4,7 @@ import (
 	"context"
 	_ipubsub "github.com/dacalin/ws_gateway/ports/pubsub"
 	"github.com/go-redis/redis/v8"
+	"log"
 )
 
 var _ _ipubsub.Client = (*Client)(nil)
@@ -27,5 +28,8 @@ func (self *Client) Subscribe(channels ...string) _ipubsub.Subscriber {
 }
 
 func (self *Client) Publish(channel string, message []byte) {
-	self.client.Publish(self.ctx, channel, message)
+	cmd := self.client.Publish(self.ctx, channel, message)
+	if cmd != nil && cmd.Err() != nil {
+		log.Fatal(cmd.Err())
+	}
 }

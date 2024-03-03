@@ -11,31 +11,40 @@ import (
 	_ipubsub "github.com/dacalin/ws_gateway/ports/pubsub"
 	_iserver "github.com/dacalin/ws_gateway/ports/server"
 	"github.com/go-redis/redis/v8"
+	"log"
 	"strconv"
 	"strings"
 )
 
-func configPubSubDriver(config Config, ctx context.Context) _ipubsub.Client {
+func configPubSubDriver(config Config, ctx context.Context) (_ipubsub.Client, error) {
 	redisAddress := config.GWSDriver.PubSub.Host + ":" + strconv.Itoa(config.GWSDriver.PubSub.Port)
 
 	var redisClient = redis.NewClient(&redis.Options{
 		Addr: redisAddress,
 	})
 
+	if err := redisClient.Ping(ctx); err != nil {
+		log.Fatal(err)
+		return nil, err.Err()
+	}
+
 	pubsubClient := _pubsub.NewClient(redisClient, ctx)
 
-	return pubsubClient
+	return pubsubClient, nil
 
 }
 
-func configGWSDriver(config Config, ctx context.Context) (_iserver.Server, _igateway.Gateway) {
-	var pubsubClient = configPubSubDriver(config, ctx)
+func configGWSDriver(config Config, ctx context.Context) (_iserver.Server, _igateway.Gateway, error) {
+	var pubsubClient, pubsubErr = configPubSubDriver(config, ctx)
+	if pubsubErr != nil {
+		return nil, nil, pubsubErr
+	}
 
 	hub := _gws_hub.New(pubsubClient)
 	connectionGateway := gateway.New(hub)
 
 	server := _gws_lib.Create(config.GWSDriver.WSRoute, config.GWSDriver.PingIntervalSeconds, pubsubClient, config.EnableDebugLog)
-	return server, connectionGateway
+	return server, connectionGateway, nil
 }
 
 func Create(config Config, ctx context.Context) (_iserver.Server, _igateway.Gateway, error) {
@@ -43,8 +52,8 @@ func Create(config Config, ctx context.Context) (_iserver.Server, _igateway.Gate
 	switch strings.ToUpper(config.Driver) {
 
 	case "GWS":
-		server, connGW := configGWSDriver(config, ctx)
-		return server, connGW, nil
+		server, connGW, err := configGWSDriver(config, ctx)
+		return server, connGW, err
 
 	default:
 		return nil, nil, errors.New("WSGateway::Unsupported Driver " + config.Driver)
