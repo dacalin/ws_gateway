@@ -23,9 +23,10 @@ func configPubSubDriver(config Config, ctx context.Context) (_ipubsub.Client, er
 		Addr: redisAddress,
 	})
 
-	if err := redisClient.Ping(ctx); err != nil {
-		log.Fatal(err)
-		return nil, err.Err()
+	cmdResp := redisClient.Ping(ctx)
+	if cmdResp.Err() != nil {
+		log.Fatal(cmdResp.Err())
+		return nil, cmdResp.Err()
 	}
 
 	pubsubClient := _pubsub.NewClient(redisClient, ctx)
