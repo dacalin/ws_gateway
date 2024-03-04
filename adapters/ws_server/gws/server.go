@@ -20,7 +20,7 @@ type WSServer struct {
 	pubsub          _ipubsub.Client
 }
 
-func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client, debug bool) *WSServer {
+func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client) *WSServer {
 	duration := time.Duration(pingInterval) * time.Second
 
 	eventHandler := EventHandler{
@@ -29,7 +29,6 @@ func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client, de
 		fnOnDisconnect: nil,
 		fnOnPing:       nil,
 		fnOnMessage:    nil,
-		debug:          debug,
 	}
 
 	return &WSServer{

@@ -1,8 +1,10 @@
 package _pubsub
 
 import (
+	_logger "github.com/dacalin/ws_gateway/logger"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
 	"github.com/go-redis/redis/v8"
+	"log"
 )
 import "context"
 
@@ -26,21 +28,26 @@ func NewSubscriber(subscriber *redis.PubSub, ctx context.Context) *Subscriber {
 }
 
 func (self *Subscriber) Receive() chan []byte {
-	ch := self.subscriber.Channel()
-
-	chOut := make(chan []byte)
+	chOut := make(chan []byte, 100)
 
 	go func() {
-		// go routine to wrap the redis type and create a different channel type that match the interface
+
 		for {
-			select {
-			case msg := <-ch:
-				chOut <- []byte(msg.Payload)
+			msgi, err := self.subscriber.Receive(self.ctx)
+			if err != nil {
+				log.Fatal("Received Redis Error. ", err.Error())
+			} else {
+				switch msg := msgi.(type) {
+				case *redis.Message:
+					chOut <- []byte(msg.Payload)
+					_logger.Instance().Println("New PubSub MSG")
+					<-chOut
 
-			case <-self.endSignal:
-				return
-
+				default:
+					_logger.Instance().Println("New PubSub Control MSG")
+				}
 			}
+
 		}
 	}()
 

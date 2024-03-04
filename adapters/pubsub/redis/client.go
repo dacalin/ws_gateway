@@ -33,5 +33,10 @@ func (self *Client) Publish(channel string, message []byte) {
 	cmd := self.client.Publish(self.ctx, channel, message)
 	if cmd != nil && cmd.Err() != nil {
 		log.Fatal(cmd.Err())
+	} else {
+		num, _ := cmd.Result()
+
+		log.Printf("Publish, listeners=%d", num)
 	}
+
 }
