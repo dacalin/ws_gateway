@@ -24,7 +24,7 @@ func configPubSubDriver(config Config, ctx context.Context) (_ipubsub.Client, er
 	var redisClient = redis.NewClient(&redis.Options{
 		Addr:        redisAddress,
 		ReadTimeout: 0,
-		PoolSize:    100,
+		PoolSize:    10000,
 		PoolTimeout: 60 * time.Second,
 	})
 
