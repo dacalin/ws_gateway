@@ -15,13 +15,17 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func configPubSubDriver(config Config, ctx context.Context) (_ipubsub.Client, error) {
 	redisAddress := config.GWSDriver.PubSub.Host + ":" + strconv.Itoa(config.GWSDriver.PubSub.Port)
 
 	var redisClient = redis.NewClient(&redis.Options{
-		Addr: redisAddress,
+		Addr:        redisAddress,
+		ReadTimeout: 0,
+		PoolSize:    100,
+		PoolTimeout: 60 * time.Second,
 	})
 
 	cmdResp := redisClient.Ping(ctx)
