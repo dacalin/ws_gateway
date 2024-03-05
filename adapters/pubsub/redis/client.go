@@ -2,6 +2,7 @@ package _pubsub
 
 import (
 	"context"
+	_logger "github.com/dacalin/ws_gateway/logger"
 	_ipubsub "github.com/dacalin/ws_gateway/ports/pubsub"
 	"github.com/go-redis/redis/v8"
 	"log"
@@ -28,7 +29,7 @@ func (self *Client) Subscribe(channels ...string) _ipubsub.Subscriber {
 }
 
 func (self *Client) Publish(channel string, message []byte) {
-	log.Printf("Publish, channel=%s, msg=%s\n", channel, string(message))
+	_logger.Instance().Printf("Publish, channel=%s, msg=%s\n", channel, string(message))
 
 	cmd := self.client.Publish(self.ctx, channel, message)
 	if cmd != nil && cmd.Err() != nil {
@@ -36,7 +37,7 @@ func (self *Client) Publish(channel string, message []byte) {
 	} else {
 		num, _ := cmd.Result()
 
-		log.Printf("Publish, listeners=%d", num)
+		_logger.Instance().Printf("Publish, listeners=%d", num)
 	}
 
 }

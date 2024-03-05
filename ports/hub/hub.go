@@ -10,4 +10,6 @@ type Hub interface {
 	Get(cid _connection_id.ConnectionId) (_client_connection.Connection, bool)
 	Delete(cid _connection_id.ConnectionId)
 	Send(cid _connection_id.ConnectionId, data []byte)
+	SendTo(topic string, data []byte)
+	ListenTo(cid _connection_id.ConnectionId, topic string)
 }

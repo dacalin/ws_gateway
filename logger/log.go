@@ -29,12 +29,12 @@ func New(debug bool) *Log {
 
 func (self *Log) Printf(format string, v ...any) {
 	if self.debug {
-		log.Printf(format, v)
+		log.Printf(format, v...)
 	}
 }
 
 func (self *Log) Println(v ...any) {
 	if self.debug {
-		log.Println(v)
+		log.Println(v...)
 	}
 }

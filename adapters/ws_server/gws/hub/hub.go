@@ -1,6 +1,7 @@
 package _gws_hub
 
 import (
+	"context"
 	_logger "github.com/dacalin/ws_gateway/logger"
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	_iconnection "github.com/dacalin/ws_gateway/ports/connection"
@@ -37,21 +38,17 @@ func New(pubsub _ipubsub.Client) *Hub {
 	return instance
 }
 
-func listener(data ConnectionData, pubsub _ipubsub.Client) {
+func listener(data ConnectionData, pubsub _ipubsub.Client, topic string) {
 	_logger.Instance().Printf("listening cid=%s", data.connection.ConnectionId())
 
-	cid := data.connection.ConnectionId()
-	subscriber := pubsub.Subscribe(cid.Value())
+	subscriber := pubsub.Subscribe(topic)
 
 	for {
 		select {
-		case signal := <-data.endSignal:
+		case <-data.ctx.Done():
 			_logger.Instance().Printf("listener end signal cid=%s", data.connection.ConnectionId())
-
-			if signal == true {
-				subscriber.Close()
-				return
-			}
+			subscriber.Close()
+			return
 
 		case msg := <-subscriber.Receive():
 			_logger.Instance().Printf("RECEIVER MSG cid=%s, MSG=%s", data.connection.ConnectionId(), msg)
@@ -64,37 +61,38 @@ func listener(data ConnectionData, pubsub _ipubsub.Client) {
 
 func (self *Hub) Set(cid _connection_id.ConnectionId, conn _iconnection.Connection) {
 
-	channel := make(chan bool)
+	ctx, cancel := context.WithCancel(context.Background())
 
 	data := ConnectionData{
-		endSignal:  channel,
+		ctx:        ctx,
+		cancel:     cancel,
 		connection: conn,
 	}
 
 	self.connections.Store(cid, data)
 
-	go listener(data, self.pubsub)
+	go listener(data, self.pubsub, cid.Value())
 }
 
 func (self *Hub) Get(cid _connection_id.ConnectionId) (_iconnection.Connection, bool) {
-	conn, found := self.connections.Load(cid)
+	connDataI, found := self.connections.Load(cid)
 
 	if found == false {
 		return nil, found
 	}
 
-	connCasted := conn.(ConnectionData)
-	return connCasted.connection, found
+	connData := connDataI.(ConnectionData)
+	return connData.connection, found
 }
 
 func (self *Hub) Delete(cid _connection_id.ConnectionId) {
-	conn, found := self.connections.Load(cid)
+	connDataI, found := self.connections.Load(cid)
 	if found == false {
 		return
 	}
 
-	connCasted := conn.(ConnectionData)
-	connCasted.endSignal <- true
+	connData := connDataI.(ConnectionData)
+	connData.cancel()
 
 	self.connections.Delete(cid)
 }
@@ -113,6 +111,21 @@ func (self *Hub) Send(cid _connection_id.ConnectionId, data []byte) {
 		self.PubSub().Publish(cid.Value(), data)
 	} else {
 		conn.Send(data)
-
 	}
+}
+
+func (self *Hub) SendTo(topic string, data []byte) {
+	_logger.Instance().Printf("Send To topic=%s", topic)
+	self.PubSub().Publish(topic, data)
+}
+
+func (self *Hub) ListenTo(cid _connection_id.ConnectionId, topic string) {
+	connDataI, found := self.connections.Load(cid)
+	connData := connDataI.(ConnectionData)
+
+	if found == true {
+		_logger.Instance().Printf("Listen To topic=%s, cid%s", topic, cid)
+		go listener(connData, self.pubsub, topic)
+	}
+
 }

@@ -43,13 +43,7 @@ func (self *Gateway) Send(cid _connection_id.ConnectionId, data []byte) {
 
 func (self *Gateway) Broadcast(group string, data []byte) {
 	_logger.Instance().Printf("Broadcast, group=%s  data=%s", group, data)
-
-	connMapI, _ := self.groups.Load(groupName(group))
-	connMap := connMapI.(ConnectionMap)
-
-	for cid, _ := range connMap.Items() {
-		self.Send(cid, data)
-	}
+	self.hub.SendTo(group, data)
 }
 
 func (self *Gateway) SetGroup(cid _connection_id.ConnectionId, group string) {
@@ -66,6 +60,7 @@ func (self *Gateway) SetGroup(cid _connection_id.ConnectionId, group string) {
 	}
 
 	connMap.Set(cid)
+	self.hub.ListenTo(cid, group)
 }
 
 func (self *Gateway) RemoveGroup(cid _connection_id.ConnectionId, group string) {
