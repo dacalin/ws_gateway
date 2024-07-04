@@ -1,6 +1,7 @@
 package _gws_lib
 
 import (
+	"crypto/tls"
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
 	_iserver "github.com/dacalin/ws_gateway/ports/server"
@@ -18,9 +19,11 @@ type WSServer struct {
 	connectionRoute string
 	eventHandler    EventHandler
 	pubsub          _ipubsub.Client
+	certFile        string
+	keyFile         string
 }
 
-func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client) *WSServer {
+func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client, certFile string, keyFile string) *WSServer {
 	duration := time.Duration(pingInterval) * time.Second
 
 	eventHandler := EventHandler{
@@ -35,6 +38,8 @@ func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client) *W
 		eventHandler:    eventHandler,
 		connectionRoute: connectionRoute,
 		pubsub:          pubsub,
+		certFile:        certFile,
+		keyFile:         keyFile,
 	}
 }
 
@@ -78,7 +83,22 @@ func (self *WSServer) Run(port int) {
 		}()
 	})
 
-	http.ListenAndServe(":"+strconv.Itoa(port), mux)
+	addr := ":" + strconv.Itoa(port)
+
+	if self.certFile != "" && self.keyFile != "" {
+		// Start HTTPS server with TLS
+		log.Println("Starting secure WebSocket server on wss://0.0.0.0" + addr)
+		server := &http.Server{
+			Addr:      addr,
+			Handler:   mux,
+			TLSConfig: &tls.Config{MinVersion: tls.VersionTLS12},
+		}
+		log.Fatal(server.ListenAndServeTLS(self.certFile, self.keyFile))
+	} else {
+		// Start HTTP server
+		log.Println("Starting WebSocket server on ws://0.0.0.0" + addr)
+		log.Fatal(http.ListenAndServe(addr, mux))
+	}
 }
 
 func (self *WSServer) OnConnect(onConnect _iserver.FnOnConnect) {

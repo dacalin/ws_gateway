@@ -23,6 +23,8 @@ func configPubSubDriver(config Config, ctx context.Context) (_ipubsub.Client, er
 
 	var redisClient = redis.NewClient(&redis.Options{
 		Addr:        redisAddress,
+		Password:    config.GWSDriver.PubSub.Password,
+		Username:    config.GWSDriver.PubSub.User,
 		ReadTimeout: 0,
 		PoolSize:    10000,
 		PoolTimeout: 60 * time.Second,
@@ -51,7 +53,7 @@ func configGWSDriver(config Config, ctx context.Context) (_iserver.Server, _igat
 	hub := _gws_hub.New(pubsubClient)
 	connectionGateway := gateway.New(hub)
 
-	server := _gws_lib.Create(config.GWSDriver.WSRoute, config.GWSDriver.PingIntervalSeconds, pubsubClient)
+	server := _gws_lib.Create(config.GWSDriver.WSRoute, config.GWSDriver.PingIntervalSeconds, pubsubClient, config.CertFile, config.KeyFile)
 
 	return server, connectionGateway, nil
 }

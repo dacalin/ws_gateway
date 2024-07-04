@@ -7,6 +7,8 @@ type Config struct {
 	Driver         string
 	GWSDriver      GWSDriverConfig
 	EnableDebugLog bool
+	CertFile       string
+	KeyFile        string
 }
 
 type GWSDriverConfig struct {
@@ -16,7 +18,8 @@ type GWSDriverConfig struct {
 }
 
 type PubSubDriverConfig struct {
-	Driver string
-	Host   string
-	Port   int
+	Host     string
+	Port     int
+	User     string
+	Password string
 }
