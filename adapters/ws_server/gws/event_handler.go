@@ -70,6 +70,8 @@ func (self *EventHandler) OnPong(socket *gws.Conn, payload []byte) {
 }
 
 func (self *EventHandler) OnMessage(socket *gws.Conn, message *gws.Message) {
+	_ = socket.SetDeadline(time.Now().Add(self.pingInterval + PingWait))
+
 	_logger.Instance().Printf("OnMessage, cid=%s, msg=%s\n", getCid(socket), string(message.Bytes()))
 
 	defer message.Close()
