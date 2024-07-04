@@ -22,4 +22,5 @@ type PubSubDriverConfig struct {
 	Port     int
 	User     string
 	Password string
+	Driver   string
 }
