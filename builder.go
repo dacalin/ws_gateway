@@ -26,7 +26,7 @@ func configPubSubDriver(config Config, ctx context.Context) (_ipubsub.Client, er
 		Password:    config.GWSDriver.PubSub.Password,
 		Username:    config.GWSDriver.PubSub.User,
 		ReadTimeout: 0,
-		PoolSize:    10000,
+		PoolSize:    100,
 		PoolTimeout: 60 * time.Second,
 	})
 
