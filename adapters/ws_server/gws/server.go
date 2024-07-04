@@ -2,6 +2,7 @@ package _gws_lib
 
 import (
 	"crypto/tls"
+	"fmt"
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
 	_iserver "github.com/dacalin/ws_gateway/ports/server"
@@ -25,6 +26,7 @@ type WSServer struct {
 
 func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client, certFile string, keyFile string) *WSServer {
 	duration := time.Duration(pingInterval) * time.Second
+	log.Println(fmt.Sprintf("Ping interval will close after %d seconds of inactivity", pingInterval))
 
 	eventHandler := EventHandler{
 		pingInterval:   duration,
