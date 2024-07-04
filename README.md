@@ -85,5 +85,3 @@ An example app can be found here https://github.com/dacalin/demo_chat
 The lib was designed thinking in future support of different services. 
 The next adapters to be implemented are:
 - AWS API Gateway
-- RabbitMQ
-- Kafka
