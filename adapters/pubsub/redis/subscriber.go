@@ -27,46 +27,37 @@ func NewSubscriber(subscriber *redis.PubSub, ctx context.Context) *Subscriber {
 	}
 }
 
-func (self *Subscriber) Receive() chan []byte {
-	chOut := make(chan []byte, 100)
+func (s *Subscriber) Receive() chan []byte {
+    chOut := make(chan []byte, 100)
+    pubChan := s.subscriber.Channel() // returns a <-chan *redis.Message
 
-	go func() {
+    go func() {
         defer close(chOut)
 
-		for {
-			// Use select to allow receiving an endSignal that tells us to stop
-			select {
-				case <-self.endSignal:
-					_logger.Instance().Println("Received end signal, stopping subscriber loop.")
-					self.subscriber.Close()
-					return
+        for {
+            select {
+            case <-s.endSignal:
+                _logger.Instance().Println("Received end signal, stopping subscriber loop.")
+                return
 
-				default:
-					msgi, err := self.subscriber.Receive(self.ctx)
-					if err != nil {
-						log.Fatal("Received Redis Error. ", err.Error())
-					} else {
-						switch msg := msgi.(type) {
-						case *redis.Message:
-							chOut <- []byte(msg.Payload)
-							_logger.Instance().Println("New PubSub MSG")
+            case msg, ok := <-pubChan:
+                if !ok {
+                    // This means the subscription channel got closed
+                    _logger.Instance().Println("Subscriber channel closed, exiting loop.")
+                    return
+                }
+                // Process Redis message
+                chOut <- []byte(msg.Payload)
+                _logger.Instance().Println("New PubSub MSG:", msg.Payload)
+            }
+        }
+    }()
 
-						default:
-							_logger.Instance().Println("New PubSub Control MSG")
-						}
-					}
-				}
-
-		}
-	}()
-
-	return chOut
-
+    return chOut
 }
 
 func (self *Subscriber) Close() {
 	_logger.Instance().Println("Subscriber Close.")
-
 	self.endSignal <- true
-	//self.subscriber.Close()
+	self.subscriber.Close()
 }
