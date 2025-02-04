@@ -31,22 +31,31 @@ func (self *Subscriber) Receive() chan []byte {
 	chOut := make(chan []byte, 100)
 
 	go func() {
+        defer close(chOut)
 
 		for {
-			msgi, err := self.subscriber.Receive(self.ctx)
-			if err != nil {
-				log.Fatal("Received Redis Error. ", err.Error())
-			} else {
-				switch msg := msgi.(type) {
-				case *redis.Message:
-					chOut <- []byte(msg.Payload)
-					_logger.Instance().Println("New PubSub MSG")
-					<-chOut
-
+			// Use select to allow receiving an endSignal that tells us to stop
+			select {
+				case <-self.endSignal:
+					_logger.Instance().Println("Received end signal, stopping subscriber loop.")
+					self.subscriber.Close()
+					return
 				default:
-					_logger.Instance().Println("New PubSub Control MSG")
+					msgi, err := self.subscriber.Receive(self.ctx)
+					if err != nil {
+						log.Fatal("Received Redis Error. ", err.Error())
+					} else {
+						switch msg := msgi.(type) {
+						case *redis.Message:
+							chOut <- []byte(msg.Payload)
+							_logger.Instance().Println("New PubSub MSG")
+							<-chOut
+
+						default:
+							_logger.Instance().Println("New PubSub Control MSG")
+						}
+					}
 				}
-			}
 
 		}
 	}()
@@ -57,5 +66,5 @@ func (self *Subscriber) Receive() chan []byte {
 
 func (self *Subscriber) Close() {
 	self.endSignal <- true
-	self.subscriber.Close()
+	//self.subscriber.Close()
 }

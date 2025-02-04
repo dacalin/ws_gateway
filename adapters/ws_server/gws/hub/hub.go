@@ -39,10 +39,10 @@ func New(pubsub _ipubsub.Client) *Hub {
 }
 
 func listener(data ConnectionData, pubsub _ipubsub.Client, topic string) {
-	_logger.Instance().Printf("listening cid=%s", data.connection.ConnectionId())
+	_logger.Instance().Printf("listening cid=%s topic=%s", data.connection.ConnectionId(), topic)
 
 	subscriber := pubsub.Subscribe(topic)
-
+	
 	for {
 		select {
 		case <-data.ctx.Done():
