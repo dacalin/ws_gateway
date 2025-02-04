@@ -40,6 +40,7 @@ func (self *Subscriber) Receive() chan []byte {
 					_logger.Instance().Println("Received end signal, stopping subscriber loop.")
 					self.subscriber.Close()
 					return
+
 				default:
 					msgi, err := self.subscriber.Receive(self.ctx)
 					if err != nil {
@@ -49,7 +50,6 @@ func (self *Subscriber) Receive() chan []byte {
 						case *redis.Message:
 							chOut <- []byte(msg.Payload)
 							_logger.Instance().Println("New PubSub MSG")
-							<-chOut
 
 						default:
 							_logger.Instance().Println("New PubSub Control MSG")
@@ -65,6 +65,8 @@ func (self *Subscriber) Receive() chan []byte {
 }
 
 func (self *Subscriber) Close() {
+	_logger.Instance().Println("Subscriber Close.")
+
 	self.endSignal <- true
 	//self.subscriber.Close()
 }
