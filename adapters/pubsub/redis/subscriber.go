@@ -4,7 +4,6 @@ import (
 	_logger "github.com/dacalin/ws_gateway/logger"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
 	"github.com/go-redis/redis/v8"
-	"log"
 )
 import "context"
 
