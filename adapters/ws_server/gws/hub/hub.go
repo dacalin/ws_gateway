@@ -7,6 +7,7 @@ import (
 	_iconnection "github.com/dacalin/ws_gateway/ports/connection"
 	_ihub "github.com/dacalin/ws_gateway/ports/hub"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
+	"github.com/go-redis/redis/v8"
 	"sync"
 )
 
@@ -15,7 +16,7 @@ var _ _ihub.Hub = (*Hub)(nil)
 type Hub struct {
 	connections sync.Map
 	//connections map[_connection_id.ConnectionId]ConnectionData
-	pubsub _ipubsub.Client
+	pubsub _ipubsub.Client[*redis.Message]
 }
 
 var lock = &sync.Mutex{}
@@ -25,7 +26,7 @@ func Instance() *Hub {
 	return instance
 }
 
-func New(pubsub _ipubsub.Client) *Hub {
+func New(pubsub _ipubsub.Client[*redis.Message]) *Hub {
 	lock.Lock()
 	defer lock.Unlock()
 	if instance == nil {
@@ -38,11 +39,11 @@ func New(pubsub _ipubsub.Client) *Hub {
 	return instance
 }
 
-func listener(data ConnectionData, pubsub _ipubsub.Client, topic string) {
+func listener(data ConnectionData, pubsub _ipubsub.Client[*redis.Message], topic string) {
 	_logger.Instance().Printf("listening cid=%s topic=%s", data.connection.ConnectionId(), topic)
 
 	subscriber := pubsub.Subscribe(topic)
-	
+
 	for {
 		select {
 		case <-data.ctx.Done():
@@ -52,7 +53,7 @@ func listener(data ConnectionData, pubsub _ipubsub.Client, topic string) {
 
 		case msg := <-subscriber.Receive():
 			_logger.Instance().Printf("RECEIVER MSG cid=%s, MSG=%s", data.connection.ConnectionId(), msg)
-			data.connection.Send(msg)
+			go data.connection.Send([]byte(msg.Payload))
 
 		}
 	}
@@ -97,21 +98,21 @@ func (self *Hub) Delete(cid _connection_id.ConnectionId) {
 	self.connections.Delete(cid)
 }
 
-func (self *Hub) PubSub() _ipubsub.Client {
+func (self *Hub) PubSub() _ipubsub.Client[*redis.Message] {
 	return self.pubsub
 }
 
 func (self *Hub) Send(cid _connection_id.ConnectionId, data []byte) {
 	_logger.Instance().Printf("Send To cid=%s", cid.Value())
 
-	conn, found := self.Get(cid)
+	//conn, found := self.Get(cid)
 
-	if found == false {
-		_logger.Instance().Println("Send using PubSub")
-		self.PubSub().Publish(cid.Value(), data)
-	} else {
-		conn.Send(data)
-	}
+	//if found == false {
+	_logger.Instance().Println("Send using PubSub")
+	self.PubSub().Publish(cid.Value(), data)
+	//} else {
+	//	conn.Send(data)
+	//}
 }
 
 func (self *Hub) SendTo(topic string, data []byte) {

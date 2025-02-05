@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-func configPubSubDriver(config Config, ctx context.Context) (_ipubsub.Client, error) {
+func configPubSubDriver(config Config, ctx context.Context) (_ipubsub.Client[*redis.Message], error) {
 	redisAddress := config.GWSDriver.PubSub.Host + ":" + strconv.Itoa(config.GWSDriver.PubSub.Port)
 
 	var redisClient = redis.NewClient(&redis.Options{

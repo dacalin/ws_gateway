@@ -6,6 +6,7 @@ import (
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
 	_iserver "github.com/dacalin/ws_gateway/ports/server"
+	"github.com/go-redis/redis/v8"
 	"github.com/lxzan/gws"
 	"log"
 	"net/http"
@@ -19,12 +20,12 @@ type WSServer struct {
 	_iserver.Server
 	connectionRoute string
 	eventHandler    EventHandler
-	pubsub          _ipubsub.Client
+	pubsub          _ipubsub.Client[*redis.Message]
 	certFile        string
 	keyFile         string
 }
 
-func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client, certFile string, keyFile string) *WSServer {
+func Create(connectionRoute string, pingInterval int, pubsub _ipubsub.Client[*redis.Message], certFile string, keyFile string) *WSServer {
 	duration := time.Duration(pingInterval) * time.Second
 	log.Println(fmt.Sprintf("Ping interval will close after %d seconds of inactivity", pingInterval))
 

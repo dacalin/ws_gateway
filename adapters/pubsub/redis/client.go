@@ -8,22 +8,22 @@ import (
 	"log"
 )
 
-var _ _ipubsub.Client = (*Client)(nil)
+var _ _ipubsub.Client[*redis.Message] = (*Client)(nil)
 
 type Client struct {
-	_ipubsub.Client
+	_ipubsub.Client[*redis.Message]
 	client *redis.Client
 	ctx    context.Context
 }
 
-func NewClient(client *redis.Client, ctx context.Context) _ipubsub.Client {
+func NewClient(client *redis.Client, ctx context.Context) _ipubsub.Client[*redis.Message] {
 	return &Client{
 		client: client,
 		ctx:    ctx,
 	}
 }
 
-func (self *Client) Subscribe(channels ...string) _ipubsub.Subscriber {
+func (self *Client) Subscribe(channels ...string) _ipubsub.Subscriber[*redis.Message] {
 	subscriber := self.client.Subscribe(self.ctx, channels...)
 	return NewSubscriber(subscriber, self.ctx)
 }

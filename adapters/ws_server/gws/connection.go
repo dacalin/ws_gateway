@@ -1,6 +1,7 @@
 package _gws_lib
 
 import (
+	_logger "github.com/dacalin/ws_gateway/logger"
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	_iconnection "github.com/dacalin/ws_gateway/ports/connection"
 	"github.com/lxzan/gws"
@@ -33,6 +34,8 @@ func CreateClientConnection(socket *gws.Conn) *ClientConnection {
 func (self *ClientConnection) Send(data []byte) {
 	self.sendMutex.Lock()
 	defer self.sendMutex.Unlock()
+	_logger.Instance().Printf("Connection Send, data=%s\n", data)
+
 	self.socket.WriteMessage(gws.OpcodeText, data)
 }
 
