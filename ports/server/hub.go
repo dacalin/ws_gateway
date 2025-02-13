@@ -1,4 +1,4 @@
-package _ihub
+package _iserver
 
 import (
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"

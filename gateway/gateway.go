@@ -4,7 +4,7 @@ import (
 	_logger "github.com/dacalin/ws_gateway/logger"
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	_igateway "github.com/dacalin/ws_gateway/ports/gateway"
-	_ihub "github.com/dacalin/ws_gateway/ports/hub"
+	_ihub "github.com/dacalin/ws_gateway/ports/server"
 	"sync"
 )
 
@@ -64,6 +64,8 @@ func (self *Gateway) SetGroup(cid _connection_id.ConnectionId, group string) {
 }
 
 func (self *Gateway) RemoveGroup(cid _connection_id.ConnectionId, group string) {
+	_logger.Instance().Printf("RemoveGroup, cid=%s, group=%s\n", cid, group)
+
 	connMapI, found := self.groups.Load(groupName(group))
 	var connMap ConnectionMap
 

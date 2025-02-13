@@ -16,7 +16,7 @@ func (self *ConnectionMap) Set(cid _iconnection.ConnectionId) {
 	self.items[cid] = ""
 }
 
-func (self *ConnectionMap) Items() map[_iconnection.ConnectionId]string {
+func (self *ConnectionMap) Items() map[_iconnection.ConnectionId] string {
 	return self.items
 }
 
