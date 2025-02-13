@@ -23,15 +23,15 @@ func NewClient(client *redis.Client, ctx context.Context) _ipubsub.Client[*redis
 	}
 }
 
-func (self *Client) Subscribe(channels ...string) _ipubsub.Subscriber[*redis.Message] {
-	subscriber := self.client.Subscribe(self.ctx, channels...)
+func (self *Client) Subscribe(topics ...string) _ipubsub.Subscriber[*redis.Message] {
+	subscriber := self.client.Subscribe(self.ctx, topics...)
 	return NewSubscriber(subscriber, self.ctx)
 }
 
-func (self *Client) Publish(channel string, message []byte) {
-	_logger.Instance().Printf("Publish, channel=%s, msg=%s\n", channel, string(message))
+func (self *Client) Publish(topic string, message []byte) {
+	_logger.Instance().Printf("Publish, topic=%s, msg=%s\n", topic, string(message))
 
-	cmd := self.client.Publish(self.ctx, channel, message)
+	cmd := self.client.Publish(self.ctx, topic, message)
 	if cmd != nil && cmd.Err() != nil {
 		log.Fatal(cmd.Err())
 	} else {

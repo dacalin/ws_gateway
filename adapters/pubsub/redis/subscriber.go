@@ -11,7 +11,6 @@ var _ _ipubsub.Subscriber[*redis.Message] = (*Subscriber)(nil)
 
 type Subscriber struct {
 	_ipubsub.Subscriber[*redis.Message]
-	client     *redis.Client
 	ctx        context.Context
 	subscriber *redis.PubSub
 }
@@ -24,7 +23,6 @@ func NewSubscriber(subscriber *redis.PubSub, ctx context.Context) *Subscriber {
 }
 
 func (s *Subscriber) Receive() <-chan *redis.Message {
-
 	return s.subscriber.Channel()
 }
 

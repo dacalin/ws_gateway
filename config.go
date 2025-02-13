@@ -2,6 +2,7 @@ package ws_gateway
 
 var DRIVER_WS_GWS = "gws"
 var DRIVER_PUBSUB_REDIS = "redis"
+var DRIVER_PUBSUB_INTERNAL = "inprocess"
 
 type Config struct {
 	Driver         string

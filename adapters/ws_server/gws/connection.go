@@ -10,6 +10,7 @@ import (
 
 var _ _iconnection.Connection = (*ClientConnection)(nil)
 
+// ClientConnection represents a connection to a client.
 type ClientConnection struct {
 	_iconnection.Connection
 	socket    *gws.Conn
@@ -22,6 +23,7 @@ func getCID(socket *gws.Conn) _connection_id.ConnectionId {
 	return cid.(_connection_id.ConnectionId)
 }
 
+// CreateClientConnection creates a new client connection.
 func CreateClientConnection(socket *gws.Conn) *ClientConnection {
 
 	return &ClientConnection{
@@ -31,14 +33,16 @@ func CreateClientConnection(socket *gws.Conn) *ClientConnection {
 	}
 }
 
-func (self *ClientConnection) Send(data []byte) {
-	self.sendMutex.Lock()
-	defer self.sendMutex.Unlock()
-	_logger.Instance().Printf("Connection Send, data=%s\n", data)
+// Send sends the given data to the client.
+func (conn *ClientConnection) Send(data []byte) {
+	conn.sendMutex.Lock()
+	defer conn.sendMutex.Unlock()
+	_logger.Instance().Printf("Connection Send, data=%v\n", data)
 
-	self.socket.WriteMessage(gws.OpcodeText, data)
+	conn.socket.WriteMessage(gws.OpcodeText, data)
 }
 
-func (self *ClientConnection) ConnectionId() _connection_id.ConnectionId {
-	return self.cid
+// ConnectionId Returns the connection id.
+func (conn *ClientConnection) ConnectionId() _connection_id.ConnectionId {
+	return conn.cid
 }
