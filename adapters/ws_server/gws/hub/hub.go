@@ -83,9 +83,6 @@ func (h *Hub[T]) listener(data ConnectionData, pubsub _ipubsub.Client[T], topic 
 
 		}
 	}
-
-	
-
 }
 
 // Set adds a connection to the hub.
