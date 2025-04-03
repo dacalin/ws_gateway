@@ -79,3 +79,7 @@ func (self *Gateway) RemoveGroup(cid _connection_id.ConnectionId, group string) 
 	}
 
 }
+
+func (self *Gateway) IsConnectionExists(cid _connection_id.ConnectionId) bool {
+	return self.hub.IsListened(cid)
+}

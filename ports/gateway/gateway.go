@@ -7,4 +7,5 @@ type Gateway interface {
 	Broadcast(group string, data []byte)
 	SetGroup(id _connection_id.ConnectionId, group string)
 	RemoveGroup(id _connection_id.ConnectionId, group string)
+	IsConnectionExists(id _connection_id.ConnectionId) bool
 }

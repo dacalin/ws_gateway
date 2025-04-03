@@ -41,3 +41,12 @@ func (self *Client) Publish(topic string, message []byte) {
 	}
 
 }
+
+func (self *Client) GetNumSub(topic string) int64 {
+	mapCmd, err := self.client.PubSubNumSub(self.ctx, topic).Result()
+	if err != nil {
+		log.Fatal(err)
+		return 0
+	}
+	return mapCmd[topic]
+}
