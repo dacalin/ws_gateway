@@ -41,3 +41,12 @@ func (self *Client) Publish(topic string, message []byte) {
 	}
 
 }
+
+func (self *Client) IsListened(topic string) bool {
+	mapCmd, err := self.client.PubSubNumSub(self.ctx, topic).Result()
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	return mapCmd[topic] >= 1
+}

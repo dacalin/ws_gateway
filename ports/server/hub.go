@@ -12,4 +12,5 @@ type Hub interface {
 	Send(cid _connection_id.ConnectionId, data []byte)
 	SendTo(topic string, data []byte)
 	ListenTo(cid _connection_id.ConnectionId, topic string)
+	IsListened(id _connection_id.ConnectionId) bool
 }

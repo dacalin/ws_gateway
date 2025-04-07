@@ -3,21 +3,21 @@ package _gws_hub
 import (
 	"context"
 	"encoding/json"
-	"sync"
 	_logger "github.com/dacalin/ws_gateway/logger"
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	_iconnection "github.com/dacalin/ws_gateway/ports/connection"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
+	"sync"
 )
 
 // Hub keep track of connections, subscriptions and pubsub clients.
 type Hub[T any] struct {
 	connections sync.Map
-	pubsub _ipubsub.Client[T]
+	pubsub      _ipubsub.Client[T]
 }
 
 // Returns a new Hub instance.
-func New[T any] (pubsub _ipubsub.Client[T]) *Hub[T] {
+func New[T any](pubsub _ipubsub.Client[T]) *Hub[T] {
 	return &Hub[T]{pubsub: pubsub}
 }
 
@@ -27,9 +27,9 @@ func convert[T any](msg T) []byte {
 
 	var data []byte
 	switch v := any(msg).(type) {
-	case *[]byte:		
-	    _logger.Instance().Printf("*[]byte",)
- 
+	case *[]byte:
+		_logger.Instance().Printf("*[]byte")
+
 		if v == nil {
 			_logger.Instance().Printf("*[]byte is nil")
 			data = nil
@@ -86,7 +86,7 @@ func (h *Hub[T]) listener(data ConnectionData, pubsub _ipubsub.Client[T], topic 
 }
 
 // Set adds a connection to the hub.
-func (h  *Hub[T]) Set(cid _connection_id.ConnectionId, conn _iconnection.Connection) {
+func (h *Hub[T]) Set(cid _connection_id.ConnectionId, conn _iconnection.Connection) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -102,7 +102,7 @@ func (h  *Hub[T]) Set(cid _connection_id.ConnectionId, conn _iconnection.Connect
 }
 
 // Get returns the connection with the given connection ID.
-func (h  *Hub[T]) Get(cid _connection_id.ConnectionId) (_iconnection.Connection, bool) {
+func (h *Hub[T]) Get(cid _connection_id.ConnectionId) (_iconnection.Connection, bool) {
 	connDataI, found := h.connections.Load(cid)
 
 	if found == false {
@@ -114,7 +114,7 @@ func (h  *Hub[T]) Get(cid _connection_id.ConnectionId) (_iconnection.Connection,
 }
 
 // Delete removes the connection with the given connection ID.
-func (h  *Hub[T]) Delete(cid _connection_id.ConnectionId) {
+func (h *Hub[T]) Delete(cid _connection_id.ConnectionId) {
 	connDataI, found := h.connections.Load(cid)
 	if found == false {
 		_logger.Instance().Println("Hub Delete: cid not found")
@@ -128,12 +128,12 @@ func (h  *Hub[T]) Delete(cid _connection_id.ConnectionId) {
 }
 
 // PubSub returns the pubsub client.
-func (h  *Hub[T]) PubSub() _ipubsub.Client[T] {
+func (h *Hub[T]) PubSub() _ipubsub.Client[T] {
 	return h.pubsub
 }
 
 // Sends the given data to the connection with the given connection ID.
-func (h  *Hub[T]) Send(cid _connection_id.ConnectionId, data []byte) {
+func (h *Hub[T]) Send(cid _connection_id.ConnectionId, data []byte) {
 	_logger.Instance().Printf("Send To cid=%s", cid.Value())
 
 	conn, found := h.Get(cid)
@@ -147,13 +147,13 @@ func (h  *Hub[T]) Send(cid _connection_id.ConnectionId, data []byte) {
 }
 
 // SendTo sends the given data to the given topic.
-func (h  *Hub[T]) SendTo(topic string, data []byte) {
+func (h *Hub[T]) SendTo(topic string, data []byte) {
 	_logger.Instance().Printf("Send To topic=%s, msg=%s", topic, data)
 	h.PubSub().Publish(topic, data)
 }
 
 // ListenTo start a listener for the given connection ID and topic.
-func (h  *Hub[T]) ListenTo(cid _connection_id.ConnectionId, topic string) {
+func (h *Hub[T]) ListenTo(cid _connection_id.ConnectionId, topic string) {
 	connDataI, found := h.connections.Load(cid)
 	connData := connDataI.(ConnectionData)
 
@@ -161,4 +161,8 @@ func (h  *Hub[T]) ListenTo(cid _connection_id.ConnectionId, topic string) {
 		_logger.Instance().Printf("Listen To topic=%s, cid%s", topic, cid)
 		go h.listener(connData, h.pubsub, topic)
 	}
+}
+
+func (h *Hub[T]) IsListened(cid _connection_id.ConnectionId) bool {
+	return h.PubSub().GetNumSub(cid.Value()) >= 1
 }
