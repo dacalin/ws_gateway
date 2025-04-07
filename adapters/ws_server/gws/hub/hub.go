@@ -164,5 +164,5 @@ func (h *Hub[T]) ListenTo(cid _connection_id.ConnectionId, topic string) {
 }
 
 func (h *Hub[T]) IsListened(cid _connection_id.ConnectionId) bool {
-	return h.PubSub().GetNumSub(cid.Value()) >= 1
+	return h.PubSub().IsListened(cid.Value())
 }
