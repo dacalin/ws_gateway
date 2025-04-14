@@ -7,6 +7,7 @@ import (
 	_connection_id "github.com/dacalin/ws_gateway/models/connection_id"
 	_iconnection "github.com/dacalin/ws_gateway/ports/connection"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
+	"github.com/go-redis/redis/v8"
 	"sync"
 )
 
@@ -46,6 +47,9 @@ func convert[T any](msg T) []byte {
 		// Convert a string to []byte.
 		data = []byte(v)
 		_logger.Instance().Printf("datas=", data)
+
+	case *redis.Message:
+		return []byte(v.Payload)
 
 	default:
 		_logger.Instance().Printf("default")
