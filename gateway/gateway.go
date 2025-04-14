@@ -26,14 +26,12 @@ func Instance() *Gateway {
 }
 
 func New(hub _ihub.Hub) *Gateway {
-	lock.Lock()
-	defer lock.Unlock()
-	if instance == nil {
-		instance = &Gateway{
-			groups: sync.Map{},
-			hub:    hub,
-		}
+
+	instance = &Gateway{
+		groups: sync.Map{},
+		hub:    hub,
 	}
+	
 	return instance
 }
 

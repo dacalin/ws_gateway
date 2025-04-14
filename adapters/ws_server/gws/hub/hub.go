@@ -158,16 +158,16 @@ func (h *Hub[T]) SendTo(topic string, data []byte) {
 
 // ListenTo start a listener for the given connection ID and topic.
 func (h *Hub[T]) ListenTo(cid _connection_id.ConnectionId, topic string) {
-	_logger.Instance().Printf("ListenTo::Try Listening To topic=%s, cid%s", topic, cid)
+	_logger.Instance().Printf("ListenTo::Try Listening To topic=%s, cid=%s", topic, cid)
 
 	connDataI, found := h.connections.Load(cid)
 
 	if found == true {
 		connData := connDataI.(ConnectionData)
-		_logger.Instance().Printf("ListenTo::Listen To topic=%s, cid%s", topic, cid)
+		_logger.Instance().Printf("ListenTo::Listen To topic=%s, cid=%s", topic, cid)
 		go h.listener(connData, h.pubsub, topic)
 	} else {
-		_logger.Instance().Printf("ListenTo::cid not found topic=%s, cid%s", topic, cid)
+		_logger.Instance().Printf("ListenTo::cid not found topic=%s, cid=%s", topic, cid)
 	}
 }
 
