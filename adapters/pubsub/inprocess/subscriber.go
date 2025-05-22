@@ -5,7 +5,7 @@ import (
 	_logger "github.com/dacalin/ws_gateway/logger"
 	"github.com/dacalin/ws_gateway/ports/pubsub"
 	evbus "github.com/asaskevich/EventBus"
-
+	"sync"
 )
 
 var _ _ipubsub.Subscriber[*[]byte] = (*Subscriber)(nil)
@@ -17,6 +17,8 @@ type Subscriber struct {
 	bus *evbus.Bus
 	channel chan *[]byte
 	busSubscriber []evbus.BusSubscriber
+	closingMutex sync.Mutex
+	isClosing    bool
 }
 
 // NewSubscriber creates a new Subscriber with the given context and topics.
@@ -46,6 +48,13 @@ func (s *Subscriber) subscribe(msg []byte){
 	_logger.Instance().Printf("subscribe::Channel=%s", s.channel)
 	_logger.Instance().Printf("subscribe::Subscriber=%s", s)
 
+	s.closingMutex.Lock()
+	if s.isClosing {
+		s.closingMutex.Unlock()
+		return
+	}
+	s.closingMutex.Unlock()
+
 	s.channel <- &msg
 }
 
@@ -57,6 +66,10 @@ func (s *Subscriber) Receive() <-chan *[]byte {
 // Close shuts down the Subscriber.
 func (s *Subscriber) Close() {
 	_logger.Instance().Printf("Subscriber Close topics:%s", s.topics)
+
+	s.closingMutex.Lock()
+	s.isClosing = true
+	s.closingMutex.Unlock()
 
 	for _, topic := range s.topics {
 		(*s.bus).Unsubscribe(topic, s.subscribe)		

@@ -71,7 +71,7 @@ func (self *Gateway) RemoveGroup(cid _connection_id.ConnectionId, group string) 
 		connMap = connMapI.(ConnectionMap)
 		connMap.Delete(cid)
 
-		if len(connMap.items) == 0 {
+		if connMap.Len() == 0 {
 			self.groups.Delete(groupName(group))
 		}
 	}
